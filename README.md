@@ -25,13 +25,6 @@ de saldo en tiempo real y auditoría de transacciones con sus diferentes datos r
 - Swagger
 - Intellij IDEA Community Edition
 
-## Pruebas
-### Pruebas unitarias
-
-### Pruebas de integración
-
-### API Test Postman
-
 ## Orgnización de commits del proyecto
 1. Creación del Readme.md y primeros pasos para la app reactiva.
 2. Configuración de Swagger para su correcto funcionamiento, organización del proyecto por paquetes, creación de entidades en MongoDB
@@ -46,3 +39,4 @@ de saldo en tiempo real y auditoría de transacciones con sus diferentes datos r
    - Excepción para cuenta no encontrada por accountId
    - Excepción para manejar los montos en las transacciones
    - Global Handler para el manejo global de las excepciones mejoradas
+7. Cambios en archivos relacionados a Account para generar el balance en tiempo real, generación de Test unitarios y de integración para AccountService y TransactionService

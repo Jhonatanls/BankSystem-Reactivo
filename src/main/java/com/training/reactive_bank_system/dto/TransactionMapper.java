@@ -3,6 +3,9 @@ package com.training.reactive_bank_system.dto;
 import com.training.reactive_bank_system.model.Account;
 import com.training.reactive_bank_system.model.Transaction;
 import com.training.reactive_bank_system.model.TransactionType;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.NoArgsConstructor;
 import org.springframework.stereotype.Component;
 
 import java.util.Date;

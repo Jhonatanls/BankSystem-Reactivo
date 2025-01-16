@@ -1,6 +1,7 @@
 package com.training.reactive_bank_system.service;
 
 import com.training.reactive_bank_system.dto.BalanceResponseDTO;
+import com.training.reactive_bank_system.exceptions.AccountNotFoundException;
 import com.training.reactive_bank_system.model.Account;
 import com.training.reactive_bank_system.repository.AccountRepository;
 import lombok.AllArgsConstructor;
@@ -26,13 +27,12 @@ public class AccountServiceImpl implements AccountService{
         return accountRepository.findById(accountId);
     }
 
-    @Override
     public Flux<BalanceResponseDTO> getRealTimeBalance(String accountId) {
-        return accountRepository.getTailableBalanceByAccountId(accountId)
-                .switchIfEmpty(Mono.error(new IllegalArgumentException("Cuenta no encontrada")))
+        return accountRepository.findWithTailableCursorByAccountId(accountId)
+                .switchIfEmpty(Flux.error(new AccountNotFoundException("Cuenta no encontrada")))
                 .map(account -> BalanceResponseDTO.builder()
                         .userId(account.getUserId())
-                        .accountId(accountId)
+                        .accountId(account.getAccountId())
                         .balance(account.getBalance())
                         .build());
     }
