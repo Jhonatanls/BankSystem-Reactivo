@@ -1,5 +1,6 @@
 package com.training.reactive_bank_system;
 
+import com.training.reactive_bank_system.controller.AccountController;
 import com.training.reactive_bank_system.dto.BalanceResponseDTO;
 import com.training.reactive_bank_system.model.Account;
 import com.training.reactive_bank_system.repository.AccountRepository;
@@ -10,23 +11,22 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
-import reactor.test.StepVerifier;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.reactive.WebFluxTest;
+import org.springframework.http.MediaType;
+import org.springframework.test.web.reactive.server.WebTestClient;
 
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.argThat;
-import static org.mockito.Mockito.verify;
-import static reactor.core.publisher.Mono.when;
+@WebFluxTest(AccountController.class) // Focus on controller testing
+class AccountControllerTest {
 
-@ExtendWith(MockitoExtension.class)
-class AccountServiceTest {
+    @Autowired
+    private WebTestClient webTestClient;
 
-    @Mock
+    @MockitoBean
     private AccountRepository accountRepository;
-
-    @InjectMocks
-    private AccountServiceImpl accountService;
 
     @Test
     void createAccount_shouldSaveAccountSuccessfully() {
@@ -37,20 +37,23 @@ class AccountServiceTest {
         account.setAccountNumber(123456789L);
         account.setUserId(1010115618L);
 
-        Mockito.when(accountRepository.save(argThat(a -> a.equals(account)))).thenReturn(Mono.just(account));
+        Mockito.when(accountRepository.save(Mockito.any(Account.class))).thenReturn(Mono.just(account));
 
-        // Act
-        Mono<Account> result = accountService.createAccount(account);
+        // Act & Assert
+        webTestClient.post()
+                .uri("/accounts")
+                .contentType(MediaType.APPLICATION_JSON)
+                .bodyValue(account)
+                .exchange()
+                .expectStatus().isCreated()
+                .expectBody(Account.class)
+                .value(savedAccount -> {
+                    assert savedAccount.getAccountId().equals(accountId);
+                    assert savedAccount.getAccountNumber().equals(123456789L);
+                    assert savedAccount.getUserId().equals(1010115618L);
+                });
 
-        // Assert
-        StepVerifier.create(result)
-                .expectNextMatches(savedAccount -> savedAccount.getAccountId().equals(accountId) &&
-                        savedAccount.getUserId().equals(1010115618L) &&
-                        savedAccount.getAccountNumber().equals(123456789L))
-                .verifyComplete();
-
-        verify(accountRepository).save(argThat(a -> a.equals(account)));
-
+        Mockito.verify(accountRepository).save(Mockito.any(Account.class));
     }
 
     @Test
@@ -64,15 +67,17 @@ class AccountServiceTest {
 
         Mockito.when(accountRepository.findById(accountId)).thenReturn(Mono.just(account));
 
-        // Act
-        Mono<Account> result = accountService.getAccountById(accountId);
+        // Act & Assert
+        webTestClient.get()
+                .uri("/accounts/{id}", accountId)
+                .exchange()
+                .expectStatus().isOk()
+                .expectBody(Account.class)
+                .value(foundAccount -> {
+                    assert foundAccount.getAccountId().equals(accountId);
+                });
 
-        // Assert
-        StepVerifier.create(result)
-                .expectNextMatches(foundAccount -> foundAccount.getAccountId().equals(accountId))
-                .verifyComplete();
-
-        verify(accountRepository).findById(accountId);
+        Mockito.verify(accountRepository).findById(accountId);
     }
 
     @Test
@@ -83,19 +88,24 @@ class AccountServiceTest {
         account.setAccountId(accountId);
         account.setAccountNumber(123456789L);
         account.setUserId(1010115618L);
-        when(accountRepository.findById(accountId)).thenReturn(Flux.just(account));
 
-        // Act
-        Flux<BalanceResponseDTO> result = accountService.getRealTimeBalance(accountId);
+        BalanceResponseDTO balanceResponse = new BalanceResponseDTO(account.getUserId(),accountId,  account.getBalance());
 
-        // Assert
-        StepVerifier.create(result)
-                .expectNextMatches(balance -> balance.getAccountId().equals("1") &&
-                        balance.getBalance() == 123456789L &&
-                        balance.getUserId().equals(1010115618L))
-                .verifyComplete();
+        Mockito.when(accountRepository.findById(accountId)).thenReturn(Mono.just(account));
 
-        verify(accountRepository).findById(accountId);
+        // Act & Assert
+        webTestClient.get()
+                .uri("/accounts/{id}/balance", accountId)
+                .exchange()
+                .expectStatus().isOk()
+                .expectBody(BalanceResponseDTO.class)
+                .value(balance -> {
+                    assert balance.getAccountId().equals(accountId);
+                    assert balance.getUserId().equals(1010115618L);
+                    assert balance.getBalance() == 123456789L;
+                });
+
+        Mockito.verify(accountRepository).findById(accountId);
     }
 
     @Test
@@ -103,16 +113,15 @@ class AccountServiceTest {
         // Arrange
         String accountId = "1";
 
-        when(accountRepository.deleteById(accountId)).thenReturn(Mono.empty());
+        Mockito.when(accountRepository.deleteById(accountId)).thenReturn(Mono.empty());
 
-        // Act
-        Mono<Void> result = accountService.deleteAccount(accountId);
+        // Act & Assert
+        webTestClient.delete()
+                .uri("/accounts/{id}", accountId)
+                .exchange()
+                .expectStatus().isNoContent();
 
-        // Assert
-        StepVerifier.create(result)
-                .expectComplete() // Explicitly assert completion
-                .verify();
-
-        verify(accountRepository).deleteById(accountId);
+        Mockito.verify(accountRepository).deleteById(accountId);
     }
 }
+
