@@ -9,5 +9,5 @@ import reactor.core.publisher.Flux;
 public interface AccountRepository extends ReactiveMongoRepository<Account, String> {
 
     @Tailable
-    Flux<BalanceResponseDTO> getTailableBalanceByAccountId(String Account);
+    Flux<Account> findWithTailableCursorByAccountId(String accountId);
 }
