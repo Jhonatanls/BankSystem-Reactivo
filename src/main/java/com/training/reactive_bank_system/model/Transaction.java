@@ -7,7 +7,7 @@ import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
-import java.time.LocalDateTime;
+import java.util.Date;
 
 
 @Data
@@ -23,9 +23,9 @@ public class Transaction {
     private Long userId;
     private TransactionType transactionType;
     private Double amount;
-    private LocalDateTime transactionDate;
+    private Date transactionDate;
     private Double previousBalance;
     private Double currentBalance;
-    private boolean success;
+    private Boolean success;
 
 }

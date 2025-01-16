@@ -1,7 +1,8 @@
 package com.training.reactive_bank_system.service;
 
+import com.training.reactive_bank_system.dto.BalanceResponseDTO;
 import com.training.reactive_bank_system.model.Account;
-import org.bson.types.ObjectId;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 
@@ -11,7 +12,8 @@ public interface AccountService {
 
     Mono<Account> getAccountById(String accountId);
 
-    Mono<Void> deleteAccount(String accountId);
+    Flux<BalanceResponseDTO> getRealTimeBalance(String accountId);
 
+    Mono<Void> deleteAccount(String accountId);
 
 }
