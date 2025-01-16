@@ -35,3 +35,4 @@ de saldo en tiempo real y auditoría de transacciones con sus diferentes datos r
 ## Orgnización de commits del proyecto
 1. Creación del Readme.md y primeros pasos para la app reactiva.
 2. Configuración de Swagger para su correcto funcionamiento, organización del proyecto por paquetes, creación de entidades en MongoDB
+3. Creación de modelos, repositorios, servicios y controller necesarios para el funcionamiento de la entidad cuenta que será usada para la auditoria de transacciones. 
